@@ -514,15 +514,12 @@ static void fillProvinceData(tProvinceArray * provinceArray,char *** provincesNa
 	int size=provinceArray->size;
 	*provincesName=realloc(*provincesName,size*sizeof(char*));
 	*births=realloc(*births,size*sizeof(long));
-	//long suma=0;
 
 	for (int i = 0; i < size; ++i)
 	{
 		(*provincesName)[i]=provinceArray->array[i].province->provinceData.name;
 		(*births)[i]=provinceArray->array[i].totalBirths;
-		//suma+=provinceArray->array[i].totalBirths;
 	}
-	//printf("%ld %ld\n",provinceArray->totalBirths,suma);
 
 }
 
@@ -599,20 +596,16 @@ void percentageOrder(BirthDateDataAnalizerADT BDDA)
 
 static void percentageOrderProvinces(tProvinceArray * provinceArray)
 {
-	//double prom=0;
 	for (int i = 0; i < provinceArray->size; ++i)
 	{
-		//prom+=(double)provinceArray->array[i].totalBirths/(double)provinceArray->totalBirths*100;
 		provinceArray->array[i].percentage=(double)provinceArray->array[i].totalBirths/(double)provinceArray->totalBirths*100;
-		//printf("%s,%f\n", provinceArray->array[i].province->provinceData.name,provinceArray->array[i].percentage);
 	}
-	//printf("%f\n",prom );
 	qsort(&provinceArray->array[0],provinceArray->size,sizeof(tProvinceArrayElem),(int(*)(const void*,const void*))cmp_Query_3);
 }
 
 static int cmp_Query_3(tProvinceArrayElem * a,tProvinceArrayElem * b)
 {
-	int result=a->percentage-b->percentage;
+	int result=b->percentage-a->percentage;
 	if(result==0)
 		result=strcmp(a->province->provinceData.name,b->province->provinceData.name);
 
