@@ -1,11 +1,8 @@
-#include <stdio.h>
 #include "TAD.h"
 
 #define MAX 300
 #define BLOQUE 10
 
-//funcion que procesa la informacion de l archivo con las provincias
-void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA);
 
 //enum para etapas del strtok 
 typedef enum provinceStage
@@ -13,11 +10,6 @@ typedef enum provinceStage
 	Stage_ID=0, 
 	Stage_name
 }tProvinceStage;
-
-
-
-//funcion que procesa la informacion de l archivo con los nacimientos
-void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
 
 //enum para etapas del strtok
 typedef enum bornStage
@@ -33,17 +25,21 @@ typedef enum bornStage
 	Stage_CUENTA
 }tBornStage;
 
+//funcion que procesa la informacion de l archivo con las provincias
+void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA);
+
+//funcion que procesa la informacion de l archivo con los nacimientos
+void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
+
 //funcion que genera un string de manera eficiente y lo retorna
 char * fillName(char * token);
 
-
+//funcion que lanza un error y termina el programa en caso de que algo falle
+void error(int errorCode, const char *s);
 
 void query1(BirthDateDataAnalizerADT BDDA);
 void query2(BirthDateDataAnalizerADT BDDA);
 void query3(BirthDateDataAnalizerADT BDDA);
-
-
-
 
 int main(int argc, char const *argv[])
 {
@@ -65,14 +61,14 @@ int main(int argc, char const *argv[])
 	"--/\\/--/\\/--/\\/--/\\/--/\\/--/\\/--",
 	"--/\\/--/\\/--/\\/--/\\/--/\\/--/\\/--");
 
-	printf("\t\t\t%s  Agustin Manfred --- Francisco Bernad ---- Patrick Day  %s\n\n",
+	printf("\t\t\t%s  Ignacio Manfredi ---- Francisco Bernad ---- Patrick Dey  %s\n\n",
 		"<<>><<>><<>><<>>",
 		"<<>><<>><<>><<>>");
 	printf("\t\t\tCargando...\n\n\n");
 
 
 	BirthDateDataAnalizerADT BDDA=newBirthDateDataAnalizer();
-
+	
 	processProvinceData(provinces,BDDA);
 
 	processBirthData(birthData,BDDA);
@@ -132,7 +128,10 @@ void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA)
 			analizeProvince(BDDA,newID,provinceName);
 		}
 
+	updateProvince(BDDA);
+	
 }
+
 
 void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA)
 {
@@ -144,8 +143,6 @@ void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA)
 	unsigned year,searchedID;
 
 	tBornStage stage;
-
-	updateProvince(BDDA);
 
 	fgets(str,MAX,bData);
 
@@ -180,43 +177,11 @@ void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA)
 			analizeBirthData(BDDA,searchedID,year,sex);
 		}	
 
+	updateYearsData(BDDA);
+
 }
 
 
-
-char * fillName(char * token)
-{
-	char * s=NULL;
-	int i;
-
-		for (i = 0; token[i]!=0 && token[i]!='\n' && token[i]!='\r'; i++)
-		{
-			if(i%BLOQUE == 0)
-			{
-				s=realloc(s,i+BLOQUE);
-			}
-
-			s[i]=token[i];
-		}
-
-	s=realloc(s,i+1);  
-
-	s[i]=0;
-
-	return s;
-}
-
-/*
-Donde cada línea de la salida contenga, separados por “;”, el nombre de la provincia y la
-cantidad de nacimientos en esa provincia.
-El orden de impresión es alfabético por provincia.
-❏ ​ Nombre del archivo:​ ​ query1.csv
-❏ ​ Salida de ejemplo:
-Provincia;Nacimientos
-Buenos Aires;262721
-Catamarca;125901
-Chaco;105884
-*/
 
 void query1(BirthDateDataAnalizerADT BDDA)
 {
@@ -242,16 +207,6 @@ void query1(BirthDateDataAnalizerADT BDDA)
 	fclose(query1_csv);
 }
 
-/*Query 2: Nacimientos por año y por sexo
-Donde cada línea de la salida contenga, separados por “;”, el año, la cantidad de nacimientos
-de varones (código 1) en ese año y la cantidad de nacimientos de mujeres (código 2) en ese año.
-El orden de impresión es ascendente por año.
-❏ ​ Nombre del archivo:​ ​ query2.csv
-❏ ​ Salida de ejemplo:
-Año;Varón;Mujer
-2015;162721;183742
-2016;225901;292358
-2017;105884;129469*/
 
 void query2(BirthDateDataAnalizerADT BDDA)
 {
@@ -259,7 +214,6 @@ void query2(BirthDateDataAnalizerADT BDDA)
 	long * male=NULL;
 	long * female=NULL;
 
-	updateYearsData(BDDA);
 
 	FILE * query2_csv = fopen("query2.csv", "w");
 
@@ -281,14 +235,6 @@ void query2(BirthDateDataAnalizerADT BDDA)
 	fclose(query2_csv);
 }
 
-
-/*Donde cada línea de la salida contenga separados por “;” el nombre de la provincia y el
-porcentaje de nacimientos ocurridos en esa provincia (contabilizando todos los nacimientos que
-ocurrieron en esa provincia respecto del total de nacimientos que ocurrieron en todas las
-provincias).
-El orden de impresión es descendente por el porcentaje de nacimientos y luego
-alfabéticamente por nombre de la línea.
-El porcentaje a mostrar debe ser entero (truncar el valor real obtenido).*/
 
 void query3(BirthDateDataAnalizerADT BDDA)
 {
@@ -314,34 +260,29 @@ void query3(BirthDateDataAnalizerADT BDDA)
 	fclose(query3_csv);
 }
 
+char * fillName(char * token)
+{
+	char * s=NULL;
+	int i;
 
-
-//PARA PROBAR MAIN (AGREGAR DATA.C)
-/*	printf("\n\n\n\n");
-
-		//long mujeres1=0,hombres1=0, mujeres2=0,hombres2=0;
-
-		for (int i = 0; i < BDDA->provinceArray.size; ++i)
+		for (i = 0; token[i]!=0 && token[i]!='\n' && token[i]!='\r'; i++)
 		{
-			//hombres1+=BDDA->provinceArray.array[i].province->provinceData.male;
-			//mujeres1+=BDDA->provinceArray.array[i].province->provinceData.female;
+			if(i%BLOQUE == 0)
+			{
+				s=realloc(s,i+BLOQUE);
+			}
 
-			printf("ID:%ld || Provincia: %s || Hombres: %ld || Mujeres: %ld\n",
-			BDDA->provinceArray.array[i].ID,BDDA->provinceArray.array[i].province->provinceData.name,BDDA->provinceArray.array[i].province->provinceData.male,BDDA->provinceArray.array[i].province->provinceData.female);
+			s[i]=token[i];
 		}
 
-		printf("\n\n\n\n");
+	s=realloc(s,i+1);  
 
-	    for (int i = 0; i < BDDA->yearsDataArray.size; ++i)
-		{
-			//hombres2+=BDDA->yearsDataArray.array[i].year->yearData.male;
-			//mujeres2+=BDDA->yearsDataArray.array[i].year->yearData.female;
+	s[i]=0;
 
-			printf("Year: %d || Hombres: %ld || Mujeres: %ld \n",
-			BDDA->yearsDataArray.array[i].number,
-			BDDA->yearsDataArray.array[i].year->yearData.male,
-			BDDA->yearsDataArray.array[i].year->yearData.female);
-		}
+	return s;
+}
 
-
-		//printf("MUJERES: %ld %ld, HOMBRES: %ld %ld\n",mujeres2,mujeres1,hombres2,hombres1);*/
+void error(int errorCode, const char *s){
+	fprintf(stderr, "\n\nERROR: %s",s);
+	exit(errorCode);
+}

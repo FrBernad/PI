@@ -35,7 +35,7 @@ typedef struct tProvinceNode
 typedef struct tProvinceList
 {
 	tProvinceNode* first;
-	size_t size;
+	unsigned size;
 }tProvinceList;
 
 
@@ -157,7 +157,7 @@ static void fillBirthData(tProvinceArray * provinceArray, tYearsDataList * years
 
 
 //funcjon utilizada por fillBirthData para agrega un ano a la lista recursivamente
-static tYearDataNode * addYear(tYearDataNode * first,tYearDataNode ** current, int year, int * repeated);
+static tYearDataNode * addYearRec(tYearDataNode * first,tYearDataNode ** current, int year, int * repeated);
 
 
 //pasa la lista de anos a un array
@@ -192,7 +192,7 @@ static void freeYearsDataList(tYearsDataList * yearsDataList);
 static void freeYearDataListRec(tYearDataNode * first);
 
 
-						/*QUERRYS FUNCTIONS*/
+						/*QUERYS FUNCTIONS*/
 
 
 /*QUERY 1*/
@@ -201,13 +201,12 @@ static void freeYearDataListRec(tYearDataNode * first);
 static void alphaOrderProvince(tProvinceArray * provinceArray);
 
 
-//rellena los arrays recibidos con la provincia y la cantidad de nacidos de cada una respectivamente
-static void fillProvinceData(tProvinceArray * provinceArray,char *** provincesName,long ** births);
-
-
 //funcion de comparacion utiliza para el qsort en el query1
 static int cmp_Query_1(tProvinceArrayElem * a, tProvinceArrayElem * b);
 
+
+//rellena los arrays recibidos con la provincia y la cantidad de nacidos de cada una respectivamente
+static void fillProvinceData(tProvinceArray * provinceArray,char *** provincesName,long ** births);
 
 
 /*QUERY 2*/
@@ -216,12 +215,12 @@ static int cmp_Query_1(tProvinceArrayElem * a, tProvinceArrayElem * b);
 static void numericOrderYears(tYearsDataArray * yearsDataArray);
 
 
-//rellena los arrays recibidos con el ano y la cantidad de hombres y mujeres nacidos de cada uno respectivamente
-static void fillYearsData(tYearsDataArray * yearsDataArray, long  ** year, long **male ,long **female);
-
-
 //funcion de comparacion utiliza para el qsort en el query2
 static int cmp_Query_2(tYearDataArrayElem * a, tYearDataArrayElem * b);
+
+
+//rellena los arrays recibidos con el ano y la cantidad de hombres y mujeres nacidos de cada uno respectivamente
+static void fillYearsData(tYearsDataArray * yearsDataArray, long  ** year, long **male ,long **female);
 
 
 
@@ -258,7 +257,6 @@ BirthDateDataAnalizerADT newBirthDateDataAnalizer(void)
 {
 	return calloc(1,sizeof(BirthDateDataAnalizerCDT));
 }
-
 
 
 /*-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=--=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-*/
@@ -369,7 +367,7 @@ static void fillBirthData(tProvinceArray * provinceArray, tYearsDataList * years
 
 	int repeated=1;
 
-			yearsDataList->first=addYear(yearsDataList->first,&yearsDataList->current,year,&repeated);
+			yearsDataList->first=addYearRec(yearsDataList->first,&yearsDataList->current,year,&repeated);
 			if(!repeated)
 				yearsDataList->size++;
 
@@ -392,7 +390,7 @@ static void fillBirthData(tProvinceArray * provinceArray, tYearsDataList * years
 			provinceArray->totalBirths++;
 }
 
-static tYearDataNode * addYear(tYearDataNode * first,tYearDataNode ** current, int year, int * repeated)
+static tYearDataNode * addYearRec(tYearDataNode * first,tYearDataNode ** current, int year, int * repeated)
 {
 	int c;
 	if(first==NULL || (c=cmp(year,first->yearData.year))<0)
@@ -411,7 +409,7 @@ static tYearDataNode * addYear(tYearDataNode * first,tYearDataNode ** current, i
 		return first;
 	}
 
-	first->next=addYear(first->next,current, year, repeated);
+	first->next=addYearRec(first->next,current, year, repeated);
 
 	return first;
 }
@@ -538,7 +536,6 @@ void numericOrder(BirthDateDataAnalizerADT BDDA)
 	numericOrderYears(&BDDA->yearsDataArray);
 }
 
-
 static void numericOrderYears(tYearsDataArray * yearsDataArray)
 {
 	qsort(&yearsDataArray->array[0],yearsDataArray->size,sizeof(tYearDataArrayElem),(int(*)(const void*,const void*))cmp_Query_2);
@@ -548,6 +545,13 @@ static int cmp_Query_2(tYearDataArrayElem * a, tYearDataArrayElem * b)
 {
 	return a->number - b->number;
 }
+
+
+void getYearsData(BirthDateDataAnalizerADT BDDA,long ** years,long ** male,long ** female)
+{
+	fillYearsData(&BDDA->yearsDataArray,years,male,female);
+}
+
 
 static void fillYearsData(tYearsDataArray * yearsDataArray, long  ** year, long **male ,long **female)
 {
@@ -564,11 +568,6 @@ static void fillYearsData(tYearsDataArray * yearsDataArray, long  ** year, long 
 	}
 }
 
-
-void getYearsData(BirthDateDataAnalizerADT BDDA,long ** years,long ** male,long ** female)
-{
-	fillYearsData(&BDDA->yearsDataArray,years,male,female);
-}
 
 //devuelve la cantidad de anos procesados
 int yearAmmount(BirthDateDataAnalizerADT BDDA)
