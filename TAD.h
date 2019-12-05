@@ -10,7 +10,7 @@
 
 	#include <errno.h>
 
-	__attribute__((used))static void error(int errorCode, const char *s){
+	__attribute__((used)) static void error(int errorCode, const char *s){
         fprintf(stderr, "\n\nERROR: %s",s);
         exit(errorCode);
     }
