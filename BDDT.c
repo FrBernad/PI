@@ -34,9 +34,6 @@ void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
 //funcion que genera un string de manera eficiente y lo retorna
 char * fillName(char * token);
 
-//funcion que lanza un error y termina el programa en caso de que algo falle
-void error(int errorCode, const char *s);
-
 void query1(BirthDateDataAnalizerADT BDDA);
 void query2(BirthDateDataAnalizerADT BDDA);
 void query3(BirthDateDataAnalizerADT BDDA);
@@ -270,19 +267,18 @@ char * fillName(char * token)
 			if(i%BLOQUE == 0)
 			{
 				s=realloc(s,i+BLOQUE);
+				if(s==NULL)
+					error(3,"Memory error");
 			}
 
 			s[i]=token[i];
 		}
 
 	s=realloc(s,i+1);  
-
+	if(s==NULL)
+		error(3,"Memory error");
+	
 	s[i]=0;
 
 	return s;
-}
-
-void error(int errorCode, const char *s){
-	fprintf(stderr, "\n\nERROR: %s",s);
-	exit(errorCode);
 }

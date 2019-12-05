@@ -172,7 +172,6 @@ static void fillYearsDataArray(tYearDataNode * first, tYearDataArrayElem ** arra
 static int cmpProvince(tProvinceArrayElem * a, tProvinceArrayElem * b);
 
 
-
 						/*FREE FUNCTIONS*/
 
 
@@ -255,7 +254,11 @@ static void fillPercentages(tProvinceArray * provinceArray, char *** provincesNa
 //devuelve nuevo BDDT
 BirthDateDataAnalizerADT newBirthDateDataAnalizer(void)
 {
-	return calloc(1,sizeof(BirthDateDataAnalizerCDT));
+	BirthDateDataAnalizerCDT * aux=calloc(1,sizeof(BirthDateDataAnalizerCDT));
+	if(aux==NULL)
+		error(3,"Memory error");
+
+	return aux;
 }
 
 
@@ -283,6 +286,8 @@ static tProvinceNode * addProvinceRec(tProvinceNode * first,unsigned newID, char
 	if(first==NULL || cmp(newID,first->ID)<0)
 	{
 		tProvinceNode * newNode=calloc(1,sizeof(tProvinceNode));
+		if(newNode==NULL)
+			error(3,"Memory error");
 		newNode->ID=newID;
 		newNode->provinceData.name=provinceName;
 		newNode->next=first;
@@ -321,6 +326,9 @@ static void provinceListToArray(tProvinceList * provinceList, tProvinceArray * p
 	int i=0,size=provinceList->size;
 
 	provinceArray->array=calloc(size,sizeof(tProvinceArrayElem));
+
+	if(provinceArray->array==NULL)
+		error(3,"Memory error");
 
 	fillProvinceArray(provinceList->first,&provinceArray->array,i);
 
@@ -396,6 +404,8 @@ static tYearDataNode * addYearRec(tYearDataNode * first,tYearDataNode ** current
 	if(first==NULL || (c=cmp(year,first->yearData.year))<0)
 	{
 		tYearDataNode * newNode=calloc(1,sizeof(tYearDataNode));
+		if(newNode==NULL)
+			error(3,"Memory error");
 		newNode->yearData.year=year;
 		newNode->next=first;
 		*current=newNode;
@@ -446,6 +456,8 @@ static void yearsDataListToArray(tYearsDataList * yearsDataList, tYearsDataArray
 	int i=0,size=yearsDataList->size;
 
 	yearsDataArray->array=realloc(yearsDataArray->array,size*sizeof(tYearDataArrayElem));
+	if(yearsDataArray->array==NULL)
+			error(3,"Memory error");
 
 	fillYearsDataArray(yearsDataList->first,&yearsDataArray->array,i);
 
@@ -511,7 +523,11 @@ static void fillProvinceData(tProvinceArray * provinceArray,char *** provincesNa
 {
 	int size=provinceArray->size;
 	*provincesName=realloc(*provincesName,size*sizeof(char*));
+	if(*provincesName==NULL)
+			error(3,"Memory error");
 	*births=realloc(*births,size*sizeof(long));
+	if(*births==NULL)
+			error(3,"Memory error");
 
 	for (int i = 0; i < size; ++i)
 	{
@@ -557,8 +573,15 @@ static void fillYearsData(tYearsDataArray * yearsDataArray, long  ** year, long 
 {
 	int size=yearsDataArray->size;
 	*year=realloc(*year,size*sizeof(long));
+	if(*year==NULL)
+			error(3,"Memory error");
 	*male=realloc(*male,size*sizeof(long));
+	if(*male==NULL)
+			error(3,"Memory error");
 	*female=realloc(*female,size*sizeof(long));
+	if(*female==NULL)
+			error(3,"Memory error");
+
 
 	for (int i = 0; i < size; ++i)
 	{
@@ -621,7 +644,11 @@ static void fillPercentages(tProvinceArray * provinceArray, char *** provincesNa
 {
 	int size=provinceArray->size;
 	*percentages=realloc(*percentages,size*sizeof(int));
+	if(*percentages==NULL)
+			error(3,"Memory error");
 	*provincesName=realloc(*provincesName,size*sizeof(char*));
+	if(*provincesName==NULL)
+			error(3,"Memory error");
 
 	for (int i = 0; i < provinceArray->size; ++i)
 	{
