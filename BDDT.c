@@ -34,6 +34,10 @@ void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
 //funcion que genera un string de manera eficiente y lo retorna
 char * fillName(char * token);
 
+//funcion que verifica que no se haya producido un error
+void checkErrno();
+
+
 void query1(BirthDateDataAnalizerADT BDDA);
 void query2(BirthDateDataAnalizerADT BDDA);
 void query3(BirthDateDataAnalizerADT BDDA);
@@ -65,18 +69,24 @@ int main(int argc, char const *argv[])
 
 
 	BirthDateDataAnalizerADT BDDA=newBirthDateDataAnalizer();
-	
+	checkErrno();
+
 	processProvinceData(provinces,BDDA);
+	checkErrno();
 
 	processBirthData(birthData,BDDA);
+	checkErrno();
 
 	printf("\t\t\t<Completado>\n\n\n");
 
 	query1(BDDA);
+	checkErrno();
 
 	query2(BDDA);
+	checkErrno();
 
 	query3(BDDA);
+	checkErrno();
 
 	freeBDDA(BDDA);
 
@@ -84,6 +94,12 @@ int main(int argc, char const *argv[])
 
 
 return 0;
+}
+
+void checkErrno()
+{
+	if(errno!=0)
+		error(errno,strerror(errno));
 }
 
 
