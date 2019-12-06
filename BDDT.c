@@ -37,7 +37,6 @@ char * fillName(char * token);
 //funcion que verifica que no se haya producido un error
 void checkErrno();
 
-
 void query1(BirthDateDataAnalizerADT BDDA);
 void query2(BirthDateDataAnalizerADT BDDA);
 void query3(BirthDateDataAnalizerADT BDDA);

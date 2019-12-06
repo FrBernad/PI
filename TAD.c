@@ -255,7 +255,7 @@ static void fillPercentages(tProvinceArray * provinceArray, char *** provincesNa
 BirthDateDataAnalizerADT newBirthDateDataAnalizer(void)
 {
 	BirthDateDataAnalizerCDT * aux=calloc(1,sizeof(BirthDateDataAnalizerCDT));
-	if(NULL==NULL)
+	if(aux==NULL)
 		errno=12;
 
 	return aux;
