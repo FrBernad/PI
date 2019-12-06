@@ -1,5 +1,8 @@
 #include "TAD.h"
 
+#define MEM_ERROR 1
+#define NO_ERROR 0
+
 /*=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-
    	           _                           _                                
               | |                         | |                               
@@ -172,24 +175,6 @@ static void fillYearsDataArray(tYearDataNode * first, tYearDataArrayElem ** arra
 static int cmpProvince(tProvinceArrayElem * a, tProvinceArrayElem * b);
 
 
-						/*FREE FUNCTIONS*/
-
-
-//free de la lista de provincias
-static void freeProvinceList(tProvinceList * provinceList);
-
-
-//funcion utilizada por freeProvinceList para hacer free de cada nodo
-static void freeProvinceListRec(tProvinceNode * first);
-
-
-//free de la lista de anos
-static void freeYearsDataList(tYearsDataList * yearsDataList);
-
-
-//funcion utilizada por freeYearsDataList para hacer free de cada nodo
-static void freeYearDataListRec(tYearDataNode * first);
-
 
 						/*QUERYS FUNCTIONS*/
 
@@ -239,6 +224,29 @@ static void fillPercentages(tProvinceArray * provinceArray, char *** provincesNa
 
 
 
+						 /*FREE FUNCTIONS*/
+
+
+//free de la lista de provincias
+static void freeProvinceList(tProvinceList * provinceList);
+
+
+//funcion utilizada por freeProvinceList para hacer free de cada nodo
+static void freeProvinceListRec(tProvinceNode * first);
+
+
+//free de la lista de anos
+static void freeYearsDataList(tYearsDataList * yearsDataList);
+
+
+//funcion utilizada por freeYearsDataList para hacer free de cada nodo
+static void freeYearDataListRec(tYearDataNode * first);
+
+
+						/*ERROR PROPAGATION FUNCTIONS*/
+
+//checkea que no se haya producio un error de asignacion en memoria 
+static int checkMem(void * pointer);
 
 
 /*=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-
@@ -251,12 +259,14 @@ static void fillPercentages(tProvinceArray * provinceArray, char *** provincesNa
                               
 =x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-*/
 
+
 //devuelve nuevo BDDT
 BirthDateDataAnalizerADT newBirthDateDataAnalizer(void)
 {
 	BirthDateDataAnalizerCDT * aux=calloc(1,sizeof(BirthDateDataAnalizerCDT));
-	if(aux==NULL)
-		errno=ENOMEM;
+
+	if(checkMem(aux)==MEM_ERROR)
+		return NULL;
 
 	return aux;
 }
@@ -278,6 +288,9 @@ void analizeProvince(BirthDateDataAnalizerADT BDDA, unsigned newID, char * provi
 static void addProvince(tProvinceList * provinceList, int newID, char * provinceName)
 {
 	provinceList->first=addProvinceRec(provinceList->first,newID,provinceName);
+	if(errno==ENOMEM)
+		return;
+
 	provinceList->size++;
 }
 
@@ -286,8 +299,8 @@ static tProvinceNode * addProvinceRec(tProvinceNode * first,unsigned newID, char
 	if(first==NULL || cmp(newID,first->ID)<0)
 	{
 		tProvinceNode * newNode=calloc(1,sizeof(tProvinceNode));
-		if(newNode==NULL)
-			errno=ENOMEM;
+		if(checkMem(newNode)==MEM_ERROR)
+			return first;
 		newNode->ID=newID;
 		newNode->provinceData.name=provinceName;
 		newNode->next=first;
@@ -327,8 +340,8 @@ static void provinceListToArray(tProvinceList * provinceList, tProvinceArray * p
 
 	provinceArray->array=calloc(size,sizeof(tProvinceArrayElem));
 
-	if(provinceArray->array==NULL)
-		errno=ENOMEM;
+	if(checkMem(provinceArray->array)==MEM_ERROR)
+		return;
 
 	fillProvinceArray(provinceList->first,&provinceArray->array,i);
 
@@ -376,6 +389,9 @@ static void fillBirthData(tProvinceArray * provinceArray, tYearsDataList * years
 	int repeated=1;
 
 			yearsDataList->first=addYearRec(yearsDataList->first,&yearsDataList->current,year,&repeated);
+			if(errno==ENOMEM)
+				return;
+
 			if(!repeated)
 				yearsDataList->size++;
 
@@ -404,8 +420,8 @@ static tYearDataNode * addYearRec(tYearDataNode * first,tYearDataNode ** current
 	if(first==NULL || (c=cmp(year,first->yearData.year))<0)
 	{
 		tYearDataNode * newNode=calloc(1,sizeof(tYearDataNode));
-		if(newNode==NULL)
-			errno=ENOMEM;
+		if(checkMem(newNode)==MEM_ERROR)
+			return first;
 		newNode->yearData.year=year;
 		newNode->next=first;
 		*current=newNode;
@@ -456,8 +472,8 @@ static void yearsDataListToArray(tYearsDataList * yearsDataList, tYearsDataArray
 	int i=0,size=yearsDataList->size;
 
 	yearsDataArray->array=realloc(yearsDataArray->array,size*sizeof(tYearDataArrayElem));
-	if(yearsDataArray->array==NULL)
-			errno=ENOMEM;
+	if(checkMem(yearsDataArray->array)==MEM_ERROR)
+		return;
 
 	fillYearsDataArray(yearsDataList->first,&yearsDataArray->array,i);
 
@@ -482,8 +498,6 @@ static void fillYearsDataArray(tYearDataNode * first, tYearDataArrayElem ** arra
 /*-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=--=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-*/
 
 /*-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=--=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-*/
-
-
 
 
 
@@ -523,11 +537,11 @@ static void fillProvinceData(tProvinceArray * provinceArray,char *** provincesNa
 {
 	int size=provinceArray->size;
 	*provincesName=realloc(*provincesName,size*sizeof(char*));
-	if(*provincesName==NULL)
-			errno=ENOMEM;
+	if(checkMem(*provincesName)==MEM_ERROR)
+		return;
 	*births=realloc(*births,size*sizeof(long));
-	if(*births==NULL)
-			errno=ENOMEM;
+	if(checkMem(*births)==MEM_ERROR)
+		return;
 
 	for (int i = 0; i < size; ++i)
 	{
@@ -573,14 +587,14 @@ static void fillYearsData(tYearsDataArray * yearsDataArray, long  ** year, long 
 {
 	int size=yearsDataArray->size;
 	*year=realloc(*year,size*sizeof(long));
-	if(*year==NULL)
-		errno=ENOMEM;
+	if(checkMem(*year)==MEM_ERROR)
+		return;
 	*male=realloc(*male,size*sizeof(long));
-	if(*male==NULL)
-		errno=ENOMEM;
+	if(checkMem(*male)==MEM_ERROR)
+		return;
 	*female=realloc(*female,size*sizeof(long));
-	if(*female==NULL)
-		errno=ENOMEM;
+	if(checkMem(*female)==MEM_ERROR)
+		return;
 
 	for (int i = 0; i < size; ++i)
 	{
@@ -643,11 +657,11 @@ static void fillPercentages(tProvinceArray * provinceArray, char *** provincesNa
 {
 	int size=provinceArray->size;
 	*percentages=realloc(*percentages,size*sizeof(int));
-	if(*percentages==NULL)
-			errno=ENOMEM;
+	if(checkMem(*percentages)==MEM_ERROR)
+		return;
 	*provincesName=realloc(*provincesName,size*sizeof(char*));
-	if(*provincesName==NULL)
-			errno=ENOMEM;
+	if(checkMem(*provincesName)==MEM_ERROR)
+		return;
 
 	for (int i = 0; i < provinceArray->size; ++i)
 	{
@@ -700,4 +714,17 @@ static void freeYearDataListRec(tYearDataNode * first)
 
 	freeYearDataListRec(first->next);
 	free(first);
+}
+
+
+/*-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-*/
+
+static int checkMem(void * pointer)
+{
+	if(pointer==NULL)
+	{
+		errno=ENOMEM;
+		return MEM_ERROR;
+	}
+	return NO_ERROR;
 }

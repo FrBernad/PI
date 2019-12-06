@@ -34,8 +34,9 @@ void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
 //funcion que genera un string de manera eficiente y lo retorna
 char * fillName(char * token);
 
-//funcion que verifica que no se haya producido un error
-void checkErrno();
+//funcion que verifica que no se haya producido un error, en caso de haberlo libera el BDDA y aborta el programa
+void checkProgramStatus(BirthDateDataAnalizerADT BDDA);
+
 
 void query1(BirthDateDataAnalizerADT BDDA);
 void query2(BirthDateDataAnalizerADT BDDA);
@@ -68,24 +69,18 @@ int main(int argc, char const *argv[])
 
 
 	BirthDateDataAnalizerADT BDDA=newBirthDateDataAnalizer();
-	checkErrno();
 
 	processProvinceData(provinces,BDDA);
-	checkErrno();
 
 	processBirthData(birthData,BDDA);
-	checkErrno();
 
 	printf("\t\t\t<Completado>\n\n\n");
 
 	query1(BDDA);
-	checkErrno();
 
 	query2(BDDA);
-	checkErrno();
 
 	query3(BDDA);
-	checkErrno();
 
 	freeBDDA(BDDA);
 
@@ -95,10 +90,14 @@ int main(int argc, char const *argv[])
 return 0;
 }
 
-void checkErrno()
+
+void checkProgramStatus(BirthDateDataAnalizerADT BDDA)
 {
 	if(errno!=0)
+	{
+		free(BDDA);
 		error(errno,strerror(errno));
+	}
 }
 
 
@@ -130,6 +129,7 @@ void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA)
 				else if(stage==Stage_name)
 				{
 					provinceName=fillName(token);
+					checkProgramStatus(BDDA);
 				}
 
 				stage++;
@@ -138,10 +138,12 @@ void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA)
 			}
 			
 			analizeProvince(BDDA,newID,provinceName);
+			checkProgramStatus(BDDA);
+
 		}
 
 	updateProvince(BDDA);
-	
+	checkProgramStatus(BDDA);
 }
 
 
@@ -187,10 +189,12 @@ void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA)
 			}
 
 			analizeBirthData(BDDA,searchedID,year,sex);
+			checkProgramStatus(BDDA);
+
 		}	
 
 	updateYearsData(BDDA);
-
+	checkProgramStatus(BDDA);
 }
 
 
@@ -199,6 +203,7 @@ void query1(BirthDateDataAnalizerADT BDDA)
 {
 	char ** provincesName=NULL;
 	long * births=NULL;
+	int maxIndex=provinceAmmount(BDDA);
 
 	FILE * query1_csv = fopen("query1.csv", "w");
 
@@ -207,8 +212,14 @@ void query1(BirthDateDataAnalizerADT BDDA)
 	alphaOrder(BDDA);
 
 	getProvinceData(BDDA,&provincesName,&births);
+	if(errno==ENOMEM)
+	{
+		free(provincesName);
+		free(births);
+		checkProgramStatus(BDDA);
+	}
 
-	for (int i = 0; i < provinceAmmount(BDDA); ++i)
+	for (int i = 0; i < maxIndex; ++i)
 	{
 		fprintf(query1_csv, "%s;%ld\n",provincesName[i],births[i]);
 	}
@@ -225,6 +236,7 @@ void query2(BirthDateDataAnalizerADT BDDA)
 	long * years=NULL;
 	long * male=NULL;
 	long * female=NULL;
+	int maxIndex=yearAmmount(BDDA);
 
 
 	FILE * query2_csv = fopen("query2.csv", "w");
@@ -234,8 +246,15 @@ void query2(BirthDateDataAnalizerADT BDDA)
 	numericOrder(BDDA);
 
 	getYearsData(BDDA,&years,&male,&female);
+	if(errno==ENOMEM)
+	{
+		free(years);
+		free(male);
+		free(female);
+		checkProgramStatus(BDDA);
+	}
 
-	for (int i = 0; i < yearAmmount(BDDA); ++i)
+	for (int i = 0; i < maxIndex; ++i)
 	{
 		fprintf(query2_csv, "%ld;%ld;%ld\n",years[i],male[i],female[i]);
 	}
@@ -243,6 +262,7 @@ void query2(BirthDateDataAnalizerADT BDDA)
 	free(years);
 	free(male);
 	free(female);
+
 
 	fclose(query2_csv);
 }
@@ -252,6 +272,7 @@ void query3(BirthDateDataAnalizerADT BDDA)
 {
 	char ** provincesName=NULL;
 	int * percentages=NULL;
+	int maxIndex=provinceAmmount(BDDA);
 
 	FILE * query3_csv = fopen("query3.csv", "w");
 
@@ -260,8 +281,15 @@ void query3(BirthDateDataAnalizerADT BDDA)
 	percentageOrder(BDDA);
 
 	getPercentages(BDDA,&provincesName,&percentages);
+	if(errno==ENOMEM)
+	{
+		free(provincesName);
+		free(percentages);
+		checkProgramStatus(BDDA);
+	}
 
-	for (int i = 0; i < provinceAmmount(BDDA); ++i)
+
+	for (int i = 0; i < maxIndex; ++i)
 	{
 		fprintf(query3_csv, "%s;%d%%\n",provincesName[i],percentages[i]);
 	}
@@ -283,7 +311,8 @@ char * fillName(char * token)
 			{
 				s=realloc(s,i+BLOQUE);
 				if(s==NULL)
-					error(3,"Memory error");
+					errno=ENOMEM;
+					
 			}
 
 			s[i]=token[i];
@@ -291,7 +320,8 @@ char * fillName(char * token)
 
 	s=realloc(s,i+1);  
 	if(s==NULL)
-		error(3,"Memory error");
+		errno=ENOMEM;
+		
 	
 	s[i]=0;
 
