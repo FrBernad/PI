@@ -28,10 +28,10 @@ typedef enum bornStage
 
 			/*DATA PROCESSING FUNCTIONS*/
 
-//funcion que procesa la informacion de l archivo con las provincias
+//funcion que procesa la informacion del archivo con las provincias
 void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA);
 
-//funcion que procesa la informacion de l archivo con los nacimientos
+//funcion que procesa la informacion del archivo con los nacimientos
 void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
 
 //funcion que genera un string de manera eficiente y lo retorna
@@ -50,7 +50,7 @@ void query3(BirthDateDataAnalizerADT BDDA);
 
 		/*ERROR DETECTION FUNCTIONS*/
 
-//funcion que verifica que no se haya producido un error, en caso de haberlo libera el BDDA y aborta el programa
+//funcion que verifica que no se haya producido un error, en caso de haberlo, libera el BDDA y aborta el programa
 void checkProgramStatus(BirthDateDataAnalizerADT BDDA);
 
 //imprime en stderr el error correspondiente y aborta con exit(errorCode)
@@ -289,7 +289,7 @@ void query3(BirthDateDataAnalizerADT BDDA)
 	percentageOrder(BDDA);
 
 	getPercentages(BDDA,&provincesName,&percentages);
-	if(errno==ENOMEM)
+	if(errno!=0)
 	{
 		free(provincesName);
 		free(percentages);
