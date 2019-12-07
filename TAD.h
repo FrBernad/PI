@@ -10,10 +10,6 @@
 
 	#include <errno.h>
 
-	__attribute__((used)) static void error(int errorCode, const char *s){
-        fprintf(stderr, "\n\nERROR: %s\n",s);
-        exit(errorCode);
-    }
 
 //=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-=x=-//
 

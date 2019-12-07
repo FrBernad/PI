@@ -25,6 +25,9 @@ typedef enum bornStage
 	Stage_CUENTA
 }tBornStage;
 
+
+			/*DATA PROCESSING FUNCTIONS*/
+
 //funcion que procesa la informacion de l archivo con las provincias
 void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA);
 
@@ -32,15 +35,29 @@ void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA);
 void processBirthData(FILE * bData, BirthDateDataAnalizerADT BDDA);
 
 //funcion que genera un string de manera eficiente y lo retorna
-char * fillName(char * token);
+char * fillName(const char * token);
+
+
+
+			/*QUERY FUNCTIONS*/
+
+void query1(BirthDateDataAnalizerADT BDDA);
+
+void query2(BirthDateDataAnalizerADT BDDA);
+
+void query3(BirthDateDataAnalizerADT BDDA);
+
+
+		/*ERROR DETECTION FUNCTIONS*/
 
 //funcion que verifica que no se haya producido un error, en caso de haberlo libera el BDDA y aborta el programa
 void checkProgramStatus(BirthDateDataAnalizerADT BDDA);
 
+//imprime en stderr el error correspondiente y aborta con exit(errorCode)
+void error(int errorCode, const char *s);
 
-void query1(BirthDateDataAnalizerADT BDDA);
-void query2(BirthDateDataAnalizerADT BDDA);
-void query3(BirthDateDataAnalizerADT BDDA);
+
+
 
 int main(int argc, char const *argv[])
 {
@@ -90,15 +107,6 @@ int main(int argc, char const *argv[])
 return 0;
 }
 
-
-void checkProgramStatus(BirthDateDataAnalizerADT BDDA)
-{
-	if(errno!=0)
-	{
-		free(BDDA);
-		error(errno,strerror(errno));
-	}
-}
 
 
 void processProvinceData(FILE * pData, BirthDateDataAnalizerADT BDDA)
@@ -212,7 +220,7 @@ void query1(BirthDateDataAnalizerADT BDDA)
 	alphaOrder(BDDA);
 
 	getProvinceData(BDDA,&provincesName,&births);
-	if(errno==ENOMEM)
+	if(errno!=0)
 	{
 		free(provincesName);
 		free(births);
@@ -246,7 +254,7 @@ void query2(BirthDateDataAnalizerADT BDDA)
 	numericOrder(BDDA);
 
 	getYearsData(BDDA,&years,&male,&female);
-	if(errno==ENOMEM)
+	if(errno!=0)
 	{
 		free(years);
 		free(male);
@@ -300,7 +308,7 @@ void query3(BirthDateDataAnalizerADT BDDA)
 	fclose(query3_csv);
 }
 
-char * fillName(char * token)
+char * fillName(const char * token)
 {
 	char * s=NULL;
 	int i;
@@ -326,4 +334,19 @@ char * fillName(char * token)
 	s[i]=0;
 
 	return s;
+}
+
+
+void checkProgramStatus(BirthDateDataAnalizerADT BDDA)
+{
+	if(errno!=0)
+	{
+		free(BDDA);
+		error(errno,strerror(errno));
+	}
+}
+
+void error(int errorCode, const char *s){
+    fprintf(stderr, "\n\nERROR: %s\n",s);
+    exit(errorCode);
 }
